@@ -1,0 +1,111 @@
+#
+# tex2mn 0.1.0 - converts Metanorma documents from LaTeX to AsciiDoc
+#
+# Copyright (C) 2019 Ribose Inc. <open.source@ribose.com>
+# This project is available under the terms of the MIT License.
+#
+
+package LaTeXML::Package::Pool;
+
+use LaTeXML::Package;
+use strict;
+use warnings;
+
+LoadClass('article');
+
+RequirePackage('lxRDFa');
+RequirePackage('graphicx');
+RequirePackage('hyperref');
+RequirePackage('amsmath');
+RequirePackage('subcaption');
+
+# NOTE: switching to ASCII encoding (inside the enveloping group) preserves quotes.
+# Otherwise, they would be mapped to curly ones by Tex.pool.ltxml fontmaps and ligatures.
+DefMacro('\mn{}',
+  '{\fontencoding{ASCII}\lxRDF{property=asciidoc-attributes,content={#1}}}');
+DefMacro('\mna{}',
+  '{\fontencoding{ASCII}\lxRDFa[.]{asciidoc-attributes={#1}}}');
+
+## Document attributes #########################################################
+
+DefMacro('\set{}{}',
+  '{\fontencoding{ASCII}\lxRDF{property=#1,content=#2}}');
+
+DefConstructor('\get{}',
+  "<ltx:text content='#1'/>");
+
+## Strikethrough ###############################################################
+
+DefConstructor('\textst{}',
+  "<ltx:text class='strikethrough'>#1</ltx:text>");
+
+## Blocks ######################################################################
+
+# NOTE: this is modeled after quote's treatment in LaTeX.pool.ltxml
+# NOTE: source are meant to be a single paragraph
+DefEnvironment("{source}",
+  "<ltx:para class=\"source\">#body</ltx:para>",
+  # NOTE: this beforeDigest gives us a single <p> inside <para> broken by <break>,
+  #       instead of multiple <p> splitted on multiple <para>s (with no classes after the first one).
+  beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
+  mode => 'text');
+
+sub define_block {
+  my ($environment, $class) = @_;
+  DefEnvironment(
+    "{$environment}",
+    sub {
+      my ($document, %props) = @_;
+      $_[0]->maybeCloseElement('ltx:p'); # this starts a new vertical block
+      insertBlock(
+        $document,
+        $props{body},
+        class => $class,
+      );
+    },
+    beforeDigest => sub {
+      Let('\par', '\inner@par');
+      # Let('\\\\', '\inner@par');
+    },
+    # mode => 'text'
+  );
+}
+
+sub define_blocks {
+  my ($block, @modifiers) = @_;
+  foreach my $modifier (@modifiers) {
+    define_block("{$modifier}", "$block--$modifier");
+  }
+}
+
+define_block('quote', 'block-quote');
+define_block('example', 'block-example');
+define_blocks('block-example', qw(requirement recommendation permission));
+define_blocks('block-open', qw(specification measurement-target verification import));
+define_blocks('block-admonition', qw(note tip important caution warning));
+
+## Terms and Definitions #######################################################
+
+DefMacro('\alt{}', '\lxRDF{property=alt,content=#1}');
+DefMacro('\deprecated{}', '\lxRDF{property=deprecated,content=#1}');
+DefMacro('\domain{}', '\lxRDF{property=domain,content=#1}');
+
+
+## Figures keys ################################################################
+
+# NOTE: this is straight from LaTeXML/lib/LaTeXML/Package/enumitem.sty.ltxml
+DefEnvironment('{key} OptionalUndigested',
+  "<ltx:description  xml:id='#id'>#body</ltx:description>",
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties => sub { beginItemize('description', '@desc'); },
+  beforeDigestEnd => sub { Digest('\par'); },
+  locked => 1, mode => 'text');
+
+## LaTeX.pool.ltxml overrides ##################################################
+
+# NOTE: the original is '\normalfont\bfseries #1' but that's annoying since
+# we want to just do <xsl:apply-templates select="ltx:tags/ltx:tag[not(@role)]"/>
+# to match description list labels and that would get us an undesired bold.
+DefMacro('\descriptionlabel{}', '\normalfont #1');
+
+1;

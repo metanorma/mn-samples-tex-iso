@@ -1,0 +1,1 @@
+This is the Metanorma-flavoured LaTeX version of https://github.com/metanorma/mn-samples-iso
