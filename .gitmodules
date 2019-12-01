@@ -1,0 +1,3 @@
+[submodule "tex2mn"]
+	path = tex2mn
+	url = git@github.com:metanorma/tex2mn.git
