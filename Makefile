@@ -1,29 +1,40 @@
+#!make
+SHELL := /bin/bash
+
+TEX  := $(wildcard *.tex)
+LXML := $(patsubst %.tex,%.lxml,$(TEX))
+ADOC := $(patsubst %.tex,%.adoc,$(TEX))
+HTML := $(patsubst %.tex,%.html,$(TEX))
+PDF  := $(patsubst %.tex,%.pdf,$(TEX))
+
+MNXSL := tex2mn/Metanorma.xsl
+
+all: $(HTML)
+
 clear:
-	rm -f iso-rice-en.xml
-	rm -f iso-rice-en.adoc
-	latexmk -c iso-rice-en.tex
+	rm -f $(LSXML) $(ADOC)
+	latexmk -c $(TEX)
 
 clobber: clear
-	rm -f iso-rice-en.adoc
-	rm -f iso-rice-en.pdf
+	rm -f $(HTML)
 	latexmk -C iso-rice-en.tex
 
-iso-rice-en.xml: iso-rice-en.tex
+%.lxml: %.tex
 	latexml \
-		iso-rice-en.tex \
-		--output=iso-rice-en.xml \
+		$< \
+		--output=$@ \
 		--nocomments
 
-iso-rice-en.adoc: iso-rice-en.xml
+%.adoc: %.lxml
 	latexmlpost \
-		iso-rice-en.xml \
+		$< \
 		--nocrossref \
-		--stylesheet=tex2mn/Metanorma.xsl \
-		--destination=iso-rice-en.adoc \
+		--stylesheet=$(MNXSL) \
+		--destination=$@ \
 		--nodefaultresources
 
-iso-rice-en.html:
-	docker run -v "$(pwd)":/metanorma/ -w /metanorma ribose/metanorma "metanorma -t iso -x html iso-rice-en.adoc"
+%.html: %.adoc
+	docker run -v $(shell pwd):/metanorma metanorma/metanorma metanorma -t iso -x html $<
 
 # iso-rice-en.pdf: iso-rice-en.tex
 # 	latexmk -pdf iso-rice-en.tex

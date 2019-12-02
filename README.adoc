@@ -1,4 +1,4 @@
-# `mn-samples-tex-iso`
+= Metanorma LaTeX samples (ISO)
 
 This is the Metanorma-flavoured LaTeX version of https://github.com/metanorma/mn-samples-iso
 
@@ -6,8 +6,9 @@ NOTE: After cloning this repo remember to initialize the `tex2mn` submodule by r
 
 You can use the `Makefile` to produce various outputs as follows:
 
-`make iso-rice-en.xml`:: use `tex2mn` to produce an intermediate XML representation of the LaTeX source
-`make iso-rice-en.adoc`:: *use `tex2mn` to produce the Metanorma-flavoured Adoc version of the document*
-`make iso-rice-en.html`:: *use `metanorma` footnote:[This requires Docker.] to produce the ISO format HTML version of the document*
+`make`:: generate `main.html` from `main.tex` (`main.tex` -> [via `tex2mn`] `main.adoc` -> [via `metanorma`] `main.html`)
+`make main.xml`:: use `tex2mn` to produce an intermediate XML representation of the LaTeX source
+`make main.adoc`:: *use `tex2mn` to produce the Metanorma-flavoured Adoc version of the document*
+`make main.html`:: *use `metanorma` footnote:[This requires Docker.] to produce the ISO format HTML version of the document*
 `make clear`:: clean temporary files
 `make clobber`:: clean up temporary and output files
