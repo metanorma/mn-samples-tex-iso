@@ -26,6 +26,10 @@ jobs:
       - name: Install Metanorma gem
         run: gem install metanorma-cli
       - name: Install LaTeXML
-        run: sudo snap install latexml --edge
+        run: |
+          curl -L http://cpanmin.us | sudo perl - App::cpanminus
+          sudo apt-get install -y libxml2-dev libxslt-dev
+          sudo cpanm --notest XML::LibXSLT@1.96 git://github.com/brucemiller/LaTeXML.git@9a0e7dc5
       - name: Tests
-        run: make all METANORMA_PREFIX=
+        run: |
+          make all METANORMA_PREFIX=
