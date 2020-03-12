@@ -1,0 +1,38 @@
+name: windows
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  test-windows:
+    name: Test on Windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # https://github.com/actions/checkout/issues/14#issuecomment-523916396
+      - name: Fix up git URLs
+        run: |
+          echo '[url "https://github.com/"]' >> ~/.gitconfig
+          echo '  insteadOf = "git@github.com:"' >> ~/.gitconfig
+      - uses: actions/checkout@master
+        with:
+          submodules: true
+      - name: Use Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.6'
+          architecture: 'x64'
+      - name: Install Metanorma gem
+        run: gem install metanorma-cli
+      - name: Install dependencies
+        shell: cmd
+        run: |
+          cinst --no-progress -y strawberryperl imagemagick.tool make gnuwin32-coreutils.install
+          echo "::add-path::C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin"
+      - name: Install LaTeXML
+        run: cpanm --notest XML::LibXSLT@1.96 git://github.com/brucemiller/LaTeXML.git@9a0e7dc5
+      - name: Tests
+        run: make all SHELL=cmd METANORMA_PREFIX=

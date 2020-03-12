@@ -1,7 +1,8 @@
 #!make
-SHELL := /bin/bash
+SHELL ?= /bin/bash
+METANORMA_PREFIX ?= docker run -v $(shell pwd):/metanorma metanorma/metanorma
 
-TEX  := $(wildcard *.tex)
+TEX  := $(wildcard sections-en/*.tex)
 LXML := $(patsubst %.tex,%.lxml,$(TEX))
 ADOC := $(patsubst %.tex,%.adoc,$(TEX))
 HTML := $(patsubst %.tex,%.html,$(TEX))
@@ -34,7 +35,7 @@ clobber: clear
 		--nodefaultresources
 
 %.html: %.adoc
-	docker run -v $(shell pwd):/metanorma metanorma/metanorma metanorma -t iso -x html $<
+	${METANORMA_PREFIX} metanorma -t iso -x html $<
 
 # iso-rice-en.pdf: iso-rice-en.tex
 # 	latexmk -pdf iso-rice-en.tex
