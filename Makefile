@@ -2,7 +2,7 @@
 SHELL ?= /bin/bash
 METANORMA_PREFIX ?= docker run -v $(shell pwd):/metanorma metanorma/metanorma
 
-TEX  := $(wildcard sections-en/*.tex)
+TEX  := $(wildcard *.tex)
 LXML := $(patsubst %.tex,%.lxml,$(TEX))
 ADOC := $(patsubst %.tex,%.adoc,$(TEX))
 HTML := $(patsubst %.tex,%.html,$(TEX))
@@ -10,15 +10,15 @@ PDF  := $(patsubst %.tex,%.pdf,$(TEX))
 
 MNXSL := tex2mn/Metanorma.xsl
 
-all: $(HTML)
+all: $(ADOC) $(HTML)
 
 clear:
-	rm -f $(LSXML) $(ADOC)
+	rm -f $(LXML) $(ADOC) *.err *.presentation.xml
 	latexmk -c $(TEX)
 
 clobber: clear
 	rm -f $(HTML)
-	latexmk -C iso-rice-en.tex
+	latexmk -C $(TEX)
 
 %.lxml: %.tex
 	latexml \
