@@ -30,9 +30,7 @@ jobs:
       - name: Install dependencies
         shell: cmd
         run: |
-          cinst --no-progress -y strawberryperl imagemagick.tool make gnuwin32-coreutils.install
-          echo "::add-path::C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin"
-      - name: Install LaTeXML
-        run: cpanm --notest XML::LibXSLT@1.96 git://github.com/brucemiller/LaTeXML.git@9a0e7dc5
+          cinst --no-progress -y imagemagick.tool make gnuwin32-coreutils.install
+          cinst --no-progress -y latexml --pre 
       - name: Tests
         run: make all SHELL=cmd METANORMA_PREFIX=
